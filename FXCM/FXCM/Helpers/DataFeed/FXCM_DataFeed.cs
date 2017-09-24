@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml.Xsl;
 
 namespace FXCM.Helpers
 {
@@ -10,7 +11,7 @@ namespace FXCM.Helpers
     {
         #region Members
 
-        #region O2G
+        #region fxcore2
         private O2GSession _session;
         private O2GSessionStatusCode _sessionStatusCode = O2GSessionStatusCode.Unknown;
         #endregion
@@ -18,12 +19,16 @@ namespace FXCM.Helpers
         private bool IsConnceted;
         private object _csSessionStatus = new object();
         private EventWaitHandle _syncSessionEvent;
+        private EventWaitHandle _syncResponseEvent;
+
+        public List<PriceUpdate> priceUpdates = new List<PriceUpdate>();
 
         #endregion
 
         #region Properties
 
-        public List<string> Symbols;
+        public string UserName { get; set; }
+        public string Password { get; set; }
         public string HelpersLink => "http://www.fxcorporate.com/Hosts.jsp";
         public string ErrorInfo { get; set; }
 
@@ -33,7 +38,7 @@ namespace FXCM.Helpers
         public FxcmDataFeed()
         {
             _syncSessionEvent = new EventWaitHandle(false,EventResetMode.AutoReset);
-            Symbols = new List<string>();
+            _syncResponseEvent = new EventWaitHandle(false,EventResetMode.AutoReset);
         }
         #endregion
         
@@ -68,11 +73,6 @@ namespace FXCM.Helpers
         private void Session_TablesUpdates(object sender, TablesUpdatesEventArgs e)
         {
             var responseFactory = _session.getResponseReaderFactory();
-            var responseOffersTableReader = responseFactory.createOffersTableReader(e.Response);
-            foreach (var column in responseOffersTableReader.Columns)
-            {
-                
-            }
             var responsGTablesUpdatesReader = responseFactory.createTablesUpdatesReader(e.Response);
             for (int i = 0; i < responsGTablesUpdatesReader.Count; i++)
             {
@@ -81,31 +81,19 @@ namespace FXCM.Helpers
                     if (responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
                     {
                         O2GOfferRow offer = responsGTablesUpdatesReader.getOfferRow(i);
-                        foreach (string symbol in Symbols)
+                        var _offerID = offer.OfferID;
+                        var _currentSymbol = offer.Instrument;
+
+                        PriceUpdate pu = new PriceUpdate
                         {
-                            if (offer.Instrument.Equals(symbol))
-                            {
-                                //_offerID = offer.OfferID;
-                                //_currentSymbol = offer.Instrument;
-                                //PriceUpdate pu = new PriceUpdate
-                                //{
-
-                                //    Symbol = offer.Instrument,
-                                //    TradeDateTime = offer.Time,
-                                //    Price = (offer.Bid + offer.Ask) / 2,
-                                //    Volume = offer.Volume,
-                                //    Bid = offer.Bid,
-                                //    Ask = offer.Ask
-                                //};
-
-                                //OnNewQuote(pu);
-
-                                //ThreadPool.QueueUserWorkItem(new WaitCallback((state) =>
-                                //{
-                                //    RealTimeUpdate(offer.Instrument, offer.Time, (offer.Bid + offer.Ask) / 2, offer.Volume, true);
-                                //}));
-                            }
-                        }
+                            Symbol = offer.Instrument,
+                            TradeDateTime = offer.Time,
+                            Price = (offer.Bid + offer.Ask) / 2,
+                            Volume = offer.Volume,
+                            Bid = offer.Bid,
+                            Ask = offer.Ask
+                        };
+                        priceUpdates.Add(pu);
                     }
                 }
             }
@@ -113,7 +101,31 @@ namespace FXCM.Helpers
 
         private void Session_RequestFailed(object sender, RequestFailedEventArgs e)
         {
-            throw new NotImplementedException();
+            lock (_csSessionStatus)
+            {
+                _sessionStatusCode = O2GSessionStatusCode.Disconnected;
+            }
+            _syncSessionEvent.Set();
+        }
+
+        public O2GSessionStatusCode Status
+        {
+            get
+            {
+                O2GSessionStatusCode status;
+                lock (_csSessionStatus)
+                {
+                    status = _sessionStatusCode;
+                }
+                return status;
+            }
+            private set
+            {
+                lock (_csSessionStatus)
+                {
+                    _sessionStatusCode = value;
+                }
+            }
         }
 
         private void Session_RequestCompleted(object sender, RequestCompletedEventArgs e)
@@ -142,9 +154,9 @@ namespace FXCM.Helpers
                 case O2GResponseType.GetOffers:
                     break;
                 case O2GResponseType.GetAccounts:
-                    //var accountsReader = factory.createAccountsTableReader(e.Response);
+                    var accountsReader = factory.createAccountsTableReader(e.Response);
                     //_accountRow = GetAccountRow(accountsReader);
-                    //_syncResponseEvent.Set();
+                    _syncResponseEvent.Set();
                     break;
                 case O2GResponseType.MarketDataSnapshot:
                     //_marketDataSnapshotResponse = _responceReaderFactory.createMarketDataSnapshotReader(e.Response);
@@ -168,6 +180,7 @@ namespace FXCM.Helpers
             {
                 _syncSessionEvent.WaitOne(5000);
             }
+
 
             return _sessionStatusCode == O2GSessionStatusCode.Connected;
         }
@@ -235,5 +248,18 @@ namespace FXCM.Helpers
         }
 
         #endregion
+    }
+
+    public class PriceUpdate
+    {
+        public DateTime TradeDateTime { get; set; }
+        public string Symbol { get; set; }
+        public double Price { get; set; }
+        public long Volume { get; set; }
+        public double Bid { get; set; }
+        public long BidSize { get; set; }
+        public double Ask { get; set; }
+        public long AskSize { get; set; }
+        public bool SystemWatch { get; set; }
     }
 }

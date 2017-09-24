@@ -1,0 +1,14 @@
+E:\Work\FXCM\FXCM\FXCM\bin\x64\Debug\FXCM.exe.config
+E:\Work\FXCM\FXCM\FXCM\bin\x64\Debug\FXCM.exe
+E:\Work\FXCM\FXCM\FXCM\bin\x64\Debug\FXCM.pdb
+E:\Work\FXCM\FXCM\FXCM\bin\x64\Debug\fxcore2.dll
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.FXCM.resources
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.Login.resources
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.Properties.Resources.resources
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.csproj.GenerateResource.Cache
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.csproj.CoreCompileInputs.cache
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.exe
+E:\Work\FXCM\FXCM\FXCM\obj\x64\Debug\FXCM.pdb
+E:\Work\FXCM\FXCM\bin\x64\Debug\FXCM.exe.config
+E:\Work\FXCM\FXCM\bin\x64\Debug\FXCM.exe
+E:\Work\FXCM\FXCM\bin\x64\Debug\FXCM.pdb
