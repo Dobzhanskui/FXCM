@@ -11,6 +11,7 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -86,6 +87,7 @@
     <Compile Include="Helpers\CustumFormLogin\Form\Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\Helpers\TableUpdateInfoEventArgs.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FXCM.resx">
@@ -133,9 +135,7 @@
   <ItemGroup>
     <None Include="Helpers\Resources\fxcm.jpg" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Helpers\DataBase\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)packages\fxcore2-v1-3-0.x64.2.0.0\win-x64\*.*" /Y /I /E</PostBuildEvent>

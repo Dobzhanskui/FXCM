@@ -15,12 +15,11 @@ namespace FXCM.Helpers
             var name = Enum.GetNames(type).Where(f => f.Equals(value, StringComparison.CurrentCultureIgnoreCase)).Select(d => d).FirstOrDefault();
 
             if (name == null)
-            {
                 return string.Empty;
-            }
+
             var field = type.GetField(name);
             var customAttribute = field.GetCustomAttributes(typeof(DescriptionAttribute), false);
-            return customAttribute.Length > 0 ? ((DescriptionAttribute)customAttribute[0]).Description : name;
+            return customAttribute.Length > 0 ? ((DescriptionAttribute)customAttribute.ElementAt(0)).Description : name;
         }
 
         public static T GetDescriptionEnum(string value)
@@ -31,11 +30,11 @@ namespace FXCM.Helpers
             foreach (string name in names)
             {
                 var field = type.GetField(name);
-                var attributes = ((DescriptionAttribute)field.GetCustomAttributes(typeof(DescriptionAttribute), false)[0]).Description;
+                var attributes = ((DescriptionAttribute)field.GetCustomAttributes(typeof(DescriptionAttribute), false).ElementAt(0)).Description;
                 if (attributes == value)
                     return (T)field.GetValue(value);
             }
-            return default(T);
+            return default;
         }
     }
 

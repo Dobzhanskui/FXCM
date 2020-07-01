@@ -1,9 +1,12 @@
-﻿using fxcore2;
+﻿using FXCM.Helpers.Helpers;
+using fxcore2;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Xsl;
 
 namespace FXCM.Helpers
 {
@@ -21,30 +24,30 @@ namespace FXCM.Helpers
         private EventWaitHandle _syncSessionEvent;
         private EventWaitHandle _syncResponseEvent;
 
-        public List<PriceUpdate> priceUpdates = new List<PriceUpdate>();
+        public List<PriceUpdate> priceUpdates;
+
+        public event EventHandler<TableUpdateInfoEventArgs> TableUpdateInfoEventArgs;
 
         #endregion
 
         #region Properties
-
-        public string UserName { get; set; }
-        public string Password { get; set; }
-        public string HelpersLink => "http://www.fxcorporate.com/Hosts.jsp";
-        public string ErrorInfo { get; set; }
+        private string HelpersLink => "http://www.fxcorporate.com/Hosts.jsp";
+        private string ErrorInfo { get; set; }
 
         #endregion
-        
+
         #region Initialization
         public FxcmDataFeed()
         {
-            _syncSessionEvent = new EventWaitHandle(false,EventResetMode.AutoReset);
-            _syncResponseEvent = new EventWaitHandle(false,EventResetMode.AutoReset);
+            _syncSessionEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _syncResponseEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
+            priceUpdates = new List<PriceUpdate>();
         }
         #endregion
-        
+
         #region Connect/Disconnect
 
-        public bool ConnectToDataFeed(string username, string password, Connection connection)
+        public async Task<bool> ConnectToDataFeedAsync(string username, string password, Connection connection)
         {
             IsConnceted = false;
             try
@@ -67,7 +70,7 @@ namespace FXCM.Helpers
                 IsConnceted = false;
             }
 
-            return IsConnceted;
+            return await Task.FromResult(IsConnceted);
         }
 
         private void Session_TablesUpdates(object sender, TablesUpdatesEventArgs e)
@@ -76,24 +79,40 @@ namespace FXCM.Helpers
             var responsGTablesUpdatesReader = responseFactory.createTablesUpdatesReader(e.Response);
             for (int i = 0; i < responsGTablesUpdatesReader.Count; i++)
             {
-                if (responsGTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers)
+                if (responsGTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers && responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
                 {
-                    if (responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
-                    {
-                        O2GOfferRow offer = responsGTablesUpdatesReader.getOfferRow(i);
-                        var _offerID = offer.OfferID;
-                        var _currentSymbol = offer.Instrument;
+                    O2GOfferRow offer = responsGTablesUpdatesReader.getOfferRow(i);
+                    var _offerID = offer.OfferID;
+                    var _currentSymbol = offer.Instrument;
 
-                        PriceUpdate pu = new PriceUpdate
-                        {
-                            Symbol = offer.Instrument,
-                            TradeDateTime = offer.Time,
-                            Price = (offer.Bid + offer.Ask) / 2,
-                            Volume = offer.Volume,
-                            Bid = offer.Bid,
-                            Ask = offer.Ask
-                        };
+                    PriceUpdate pu = new PriceUpdate
+                    {
+                        Symbol = offer.Instrument,
+                        TradeDateTime = offer.Time,
+                        Price = (offer.Bid + offer.Ask) / 2,
+                        Volume = offer.Volume,
+                        Bid = offer.Bid,
+                        Ask = offer.Ask,
+                        High = offer.High,
+                        Low = offer.Low
+                    };
+
+                    var firstPriceUpdate = priceUpdates.FirstOrDefault(f => f.Symbol.Equals(pu.Symbol));
+                    if (firstPriceUpdate != null)
+                    {
+                        firstPriceUpdate.PrevAsk = firstPriceUpdate.Ask;
+                        firstPriceUpdate.Ask = pu.Ask;
+                        firstPriceUpdate.PrevBid = firstPriceUpdate.Bid;
+                        firstPriceUpdate.Bid = pu.Bid;
+                        firstPriceUpdate.Volume = pu.Volume;
+                        firstPriceUpdate.Price = pu.Price;
+                        firstPriceUpdate.TradeDateTime = pu.TradeDateTime;
+                        OnRowCountChange(true);
+                    }
+                    else
+                    {
                         priceUpdates.Add(pu);
+                        OnRowCountChange();
                     }
                 }
             }
@@ -176,9 +195,11 @@ namespace FXCM.Helpers
             _session.useTableManager(O2GTableManagerMode.Yes, null);
             _session.login(username, password, HelpersLink, connection);
 
-            if (_sessionStatusCode != O2GSessionStatusCode.Connected)
+            int countWait = 6;
+            while (_sessionStatusCode != O2GSessionStatusCode.Connected && countWait != 0)
             {
-                _syncSessionEvent.WaitOne(5000);
+                _syncSessionEvent.WaitOne(10000);
+                countWait--;
             }
 
 
@@ -247,6 +268,14 @@ namespace FXCM.Helpers
             _syncSessionEvent.Set();
         }
 
+        private void OnRowCountChange(bool wait = false)
+        {
+            if (wait)
+                Thread.Sleep(350);
+
+            TableUpdateInfoEventArgs?.Invoke(this, new TableUpdateInfoEventArgs());
+        }
+
         #endregion
     }
 
@@ -257,9 +286,10 @@ namespace FXCM.Helpers
         public double Price { get; set; }
         public long Volume { get; set; }
         public double Bid { get; set; }
-        public long BidSize { get; set; }
+        public double PrevBid { get; set; }
         public double Ask { get; set; }
-        public long AskSize { get; set; }
-        public bool SystemWatch { get; set; }
+        public double PrevAsk { get; set; }
+        public double Low { get; set; }
+        public double High { get; set; }
     }
 }
