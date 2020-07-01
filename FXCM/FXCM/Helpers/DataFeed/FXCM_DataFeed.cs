@@ -32,7 +32,6 @@ namespace FXCM.Helpers
 
         #region Properties
         private string HelpersLink => "http://www.fxcorporate.com/Hosts.jsp";
-        private string ErrorInfo { get; set; }
 
         #endregion
 
@@ -49,28 +48,31 @@ namespace FXCM.Helpers
 
         public async Task<bool> ConnectToDataFeedAsync(string username, string password, Connection connection)
         {
-            IsConnceted = false;
-            try
+            return await Task.Run(() =>
             {
-                _session = O2GTransport.createSession();
-
-                _session.LoginFailed += Session_LoginFailed;
-                _session.SessionStatusChanged += Session_SessionStatusChanged;
-
-                IsConnceted = Login(username, password, connection.ToString());
-
-                _session.RequestCompleted += Session_RequestCompleted;
-                _session.RequestFailed += Session_RequestFailed;
-                _session.TablesUpdates += Session_TablesUpdates;
-            }
-            catch (Exception ex)
-            {
-                Stop();
-                MessageBox.Show(ex.Message);
                 IsConnceted = false;
-            }
+                try
+                {
+                    _session = O2GTransport.createSession();
 
-            return await Task.FromResult(IsConnceted);
+                    _session.LoginFailed += Session_LoginFailed;
+                    _session.SessionStatusChanged += Session_SessionStatusChanged;
+
+                    IsConnceted = Login(username, password, connection.ToString());
+
+                    _session.RequestCompleted += Session_RequestCompleted;
+                    _session.RequestFailed += Session_RequestFailed;
+                    _session.TablesUpdates += Session_TablesUpdates;
+                }
+                catch (Exception ex)
+                {
+                    Stop();
+                    MessageBox.Show(ex.Message);
+                    IsConnceted = false;
+                }
+
+                return IsConnceted;
+            });
         }
 
         private void Session_TablesUpdates(object sender, TablesUpdatesEventArgs e)
@@ -81,11 +83,12 @@ namespace FXCM.Helpers
             {
                 if (responsGTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers && responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
                 {
-                    O2GOfferRow offer = responsGTablesUpdatesReader.getOfferRow(i);
-                    var _offerID = offer.OfferID;
-                    var _currentSymbol = offer.Instrument;
+                    var offer = responsGTablesUpdatesReader.getOfferRow(i);
 
-                    PriceUpdate pu = new PriceUpdate
+                    if (string.IsNullOrEmpty(offer.Instrument))
+                        continue;
+                    
+                    var pu = new PriceUpdate
                     {
                         Symbol = offer.Instrument,
                         TradeDateTime = offer.Time,
@@ -100,22 +103,20 @@ namespace FXCM.Helpers
                     var firstPriceUpdate = priceUpdates.FirstOrDefault(f => f.Symbol.Equals(pu.Symbol));
                     if (firstPriceUpdate != null)
                     {
-                        firstPriceUpdate.PrevAsk = firstPriceUpdate.Ask;
                         firstPriceUpdate.Ask = pu.Ask;
-                        firstPriceUpdate.PrevBid = firstPriceUpdate.Bid;
                         firstPriceUpdate.Bid = pu.Bid;
                         firstPriceUpdate.Volume = pu.Volume;
+                        firstPriceUpdate.PrevPrice = firstPriceUpdate.Price;
                         firstPriceUpdate.Price = pu.Price;
                         firstPriceUpdate.TradeDateTime = pu.TradeDateTime;
-                        OnRowCountChange(true);
                     }
                     else
                     {
                         priceUpdates.Add(pu);
-                        OnRowCountChange();
                     }
                 }
             }
+            OnRowCountChange();
         }
 
         private void Session_RequestFailed(object sender, RequestFailedEventArgs e)
@@ -263,16 +264,12 @@ namespace FXCM.Helpers
             lock (_csSessionStatus)
             {
                 _sessionStatusCode = O2GSessionStatusCode.Disconnected;
-                ErrorInfo = e.Error;
             }
             _syncSessionEvent.Set();
         }
 
-        private void OnRowCountChange(bool wait = false)
+        private void OnRowCountChange()
         {
-            if (wait)
-                Thread.Sleep(350);
-
             TableUpdateInfoEventArgs?.Invoke(this, new TableUpdateInfoEventArgs());
         }
 
@@ -284,11 +281,10 @@ namespace FXCM.Helpers
         public DateTime TradeDateTime { get; set; }
         public string Symbol { get; set; }
         public double Price { get; set; }
+        public double PrevPrice { get; set; }
         public long Volume { get; set; }
         public double Bid { get; set; }
-        public double PrevBid { get; set; }
         public double Ask { get; set; }
-        public double PrevAsk { get; set; }
         public double Low { get; set; }
         public double High { get; set; }
     }

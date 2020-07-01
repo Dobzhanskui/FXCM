@@ -88,6 +88,7 @@
             this.dgvAllSymbols.Size = new System.Drawing.Size(1016, 469);
             this.dgvAllSymbols.TabIndex = 0;
             this.dgvAllSymbols.VirtualMode = true;
+            this.dgvAllSymbols.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvAllSymbols_CellFormatting);
             this.dgvAllSymbols.CellValueNeeded += new System.Windows.Forms.DataGridViewCellValueEventHandler(this.dgvAllSymbols_CellValueNeeded);
             // 
             // colTime
@@ -317,7 +318,6 @@
             this.Name = "FXCM";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FXCM APP";
-            this.Load += new System.EventHandler(this.FXCM_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvAllSymbols)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.tbRealTimeSymbols.ResumeLayout(false);

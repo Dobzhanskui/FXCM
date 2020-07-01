@@ -15,10 +15,7 @@ namespace FXCM
             m_fxcm = new FxcmDataFeed();
             m_fxcm.TableUpdateInfoEventArgs += FXCM_TableUpdateInfo;
             InitializeComponent();
-        }
 
-        private void FXCM_Load(object sender, EventArgs e)
-        {
             LoginToDataFeed();
         }
 
@@ -102,9 +99,12 @@ namespace FXCM
             if (await m_fxcm.ConnectToDataFeedAsync(m_login.UserName, m_login.Passsword, m_login.ConnectionAccount))
             {
                 lbStatusFXCM.Text = m_fxcm.Status.ToString();
+                lbStatusFXCM.ForeColor = Color.Green;
             }
             else
             {
+                lbStatusFXCM.Text = m_fxcm.Status.ToString();
+                lbStatusFXCM.ForeColor = Color.Red;
                 MessageBox.Show("None wrong credentials");
             }
         }
@@ -113,13 +113,14 @@ namespace FXCM
         {
             var pu = m_fxcm.priceUpdates[e.RowIndex];
 
-            if (e.ColumnIndex == colAsk.Index && pu.PrevAsk > 0)
+            if (e.ColumnIndex == colPrice.Index && pu.PrevPrice > 0 )
             {
-                e.CellStyle.BackColor = pu.PrevAsk > pu.Ask ? Color.Red : pu.PrevAsk == pu.Ask ? Color.FromArgb(0, 0, 0, 0) : Color.Green;
-            }
-            else if (e.ColumnIndex == colBid.Index && pu.PrevBid > 0)
-            {
-                e.CellStyle.BackColor = pu.PrevBid > pu.Bid ? Color.Red : pu.PrevBid == pu.Bid ? Color.FromArgb(0, 0, 0, 0) : Color.Green;
+                var color = pu.PrevPrice > pu.Price ? Color.Red : pu.PrevPrice == pu.Price ? Color.FromArgb(0, 0, 0, 0) : Color.Green;
+                if (color != e.CellStyle.ForeColor)
+                {
+                    e.CellStyle.ForeColor = color;
+                }
+                
             }
         }
     }
