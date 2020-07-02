@@ -85,7 +85,7 @@
             this.dgvAllSymbols.RowHeadersWidth = 51;
             this.dgvAllSymbols.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
             this.dgvAllSymbols.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvAllSymbols.Size = new System.Drawing.Size(1016, 469);
+            this.dgvAllSymbols.Size = new System.Drawing.Size(1043, 499);
             this.dgvAllSymbols.TabIndex = 0;
             this.dgvAllSymbols.VirtualMode = true;
             this.dgvAllSymbols.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dgvAllSymbols_CellFormatting);
@@ -140,7 +140,7 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1040, 510);
+            this.tabControl1.Size = new System.Drawing.Size(1067, 540);
             this.tabControl1.TabIndex = 1;
             // 
             // tbRealTimeSymbols
@@ -150,7 +150,7 @@
             this.tbRealTimeSymbols.Margin = new System.Windows.Forms.Padding(4);
             this.tbRealTimeSymbols.Name = "tbRealTimeSymbols";
             this.tbRealTimeSymbols.Padding = new System.Windows.Forms.Padding(4);
-            this.tbRealTimeSymbols.Size = new System.Drawing.Size(1032, 481);
+            this.tbRealTimeSymbols.Size = new System.Drawing.Size(1059, 511);
             this.tbRealTimeSymbols.TabIndex = 0;
             this.tbRealTimeSymbols.Text = "Real Time Symbols";
             this.tbRealTimeSymbols.UseVisualStyleBackColor = true;
@@ -164,7 +164,7 @@
             this.tbCurrentSymbol.Margin = new System.Windows.Forms.Padding(4);
             this.tbCurrentSymbol.Name = "tbCurrentSymbol";
             this.tbCurrentSymbol.Padding = new System.Windows.Forms.Padding(4);
-            this.tbCurrentSymbol.Size = new System.Drawing.Size(1032, 481);
+            this.tbCurrentSymbol.Size = new System.Drawing.Size(1059, 511);
             this.tbCurrentSymbol.TabIndex = 1;
             this.tbCurrentSymbol.Text = "Current Symbol";
             this.tbCurrentSymbol.UseVisualStyleBackColor = true;
@@ -243,7 +243,7 @@
             // 
             this.lbStatusFXCM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lbStatusFXCM.AutoSize = true;
-            this.lbStatusFXCM.Location = new System.Drawing.Point(6, 542);
+            this.lbStatusFXCM.Location = new System.Drawing.Point(6, 572);
             this.lbStatusFXCM.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbStatusFXCM.Name = "lbStatusFXCM";
             this.lbStatusFXCM.Size = new System.Drawing.Size(97, 17);
@@ -254,7 +254,7 @@
             // 
             this.lbDBStatus.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lbDBStatus.AutoSize = true;
-            this.lbDBStatus.Location = new System.Drawing.Point(904, 538);
+            this.lbDBStatus.Location = new System.Drawing.Point(931, 568);
             this.lbDBStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lbDBStatus.Name = "lbDBStatus";
             this.lbDBStatus.Size = new System.Drawing.Size(75, 17);
@@ -268,7 +268,7 @@
             this.menuToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1052, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1079, 28);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -306,7 +306,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.AutoScrollMinSize = new System.Drawing.Size(580, 400);
-            this.ClientSize = new System.Drawing.Size(1052, 573);
+            this.ClientSize = new System.Drawing.Size(1079, 603);
             this.Controls.Add(this.lbDBStatus);
             this.Controls.Add(this.lbStatusFXCM);
             this.Controls.Add(this.tabControl1);

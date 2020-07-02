@@ -136,9 +136,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Helpers\Resources\fxcm_DzT_icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Helpers\Resources\if_lock_511942.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -146,9 +143,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Helpers\Resources\dolar.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Helpers\Resources\fxcm.jpg" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">

@@ -63,16 +63,6 @@ namespace FXCM.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon if_lock_511942 {
-            get {
-                object obj = ResourceManager.GetObject("if_lock_511942", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
         internal static System.Drawing.Icon if_lock_5119421 {
             get {
                 object obj = ResourceManager.GetObject("if_lock_5119421", resourceCulture);
