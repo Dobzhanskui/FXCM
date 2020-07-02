@@ -13,8 +13,8 @@ namespace FXCM
 {
     public partial class Login : Form
     {
-        public string UserName => "70856160";
-        public string Passsword => "8596";
+        public string UserName => "D291117982";
+        public string Passsword => "8pZyx";
         public Connection ConnectionAccount { get; set; }
 
         public Login()
