@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using FXCM.Helpers;
+using LiveCharts;
+using LiveCharts.Defaults;
+using LiveCharts.Wpf;
 
 namespace FXCM
 {
@@ -87,6 +89,9 @@ namespace FXCM
                 dgvAllSymbols.RowCount = m_fxcm.priceUpdates.Count;
                 cmbSymbols.Items.Clear();
                 cmbSymbols.Items.AddRange(m_fxcm.symbolsInfo.ToArray());
+                cmbSymbols.SelectedIndex = 0;
+
+                ComponentObjectEnabledAndVisiable();
             }
 
             dgvAllSymbols.Refresh();
@@ -119,6 +124,34 @@ namespace FXCM
                     e.CellStyle.ForeColor = color;
                 }
                 
+            }
+        }
+
+        private async void cmbSymbols_SelectedValueChanged(object sender, EventArgs e)
+        {
+            var historicalData = await m_fxcm.GetHistoricalDataAsync(cmbSymbols.SelectedItem.ToString());
+
+            ctsChart.Series = new SeriesCollection
+            {
+                new OhlcSeries
+                {
+                    Values = new ChartValues<OhlcPoint>(historicalData.Select(s => new OhlcPoint(s.Open, s.High, s.Low, s.Close)))
+                }
+            };
+
+            ctsChart.AxisX.Clear();
+            ctsChart.AxisX.Add(new Axis
+            {
+                Labels = historicalData.Select(s => s.Date.ToString("dd MMM HH:mm")).ToList()
+            });
+        }
+
+        private void ComponentObjectEnabledAndVisiable()
+        {
+            if (cmbSymbols.Items.Count > 0 && !ctsChart.Visible)
+            {
+                cmbSymbols.Enabled = true;
+                ctsChart.Visible = true;
             }
         }
     }

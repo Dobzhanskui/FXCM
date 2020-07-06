@@ -15,14 +15,19 @@ namespace FXCM.Helpers
         private const string HelpersLink = "http://www.fxcorporate.com/Hosts.jsp";
 
         #region fxcore2
+
         private O2GSession _session;
+        private O2GResponseReaderFactory _factory;
         private O2GSessionStatusCode _sessionStatusCode = O2GSessionStatusCode.Unknown;
-        #endregion
+        private O2GMarketDataSnapshotResponseReader _marketDataSnapshotResponse;
+
+        #endregion // fxcore2
 
         private bool IsConnceted;
         private object _csSessionStatus = new object();
         private EventWaitHandle _syncSessionEvent;
         private EventWaitHandle _syncResponseEvent;
+        private EventWaitHandle _syncHistoryEvent;
 
         public List<PriceUpdate> priceUpdates;
 
@@ -30,17 +35,20 @@ namespace FXCM.Helpers
 
         public event EventHandler<TableUpdateInfoEventArgs> TableUpdateInfoEventArgs;
 
-        #endregion
+        #endregion // Members
 
         #region Initialization
+
         public FxcmDataFeed()
         {
             _syncSessionEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
             _syncResponseEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _syncHistoryEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
             priceUpdates = new List<PriceUpdate>();
             symbolsInfo = new List<string>();
         }
-        #endregion
+
+        #endregion // Initialization
 
         #region Connect/Disconnect
 
@@ -61,6 +69,8 @@ namespace FXCM.Helpers
                     _session.RequestCompleted += Session_RequestCompleted;
                     _session.RequestFailed += Session_RequestFailed;
                     _session.TablesUpdates += Session_TablesUpdates;
+
+                    _factory = _session.getResponseReaderFactory();
                 }
                 catch (Exception ex)
                 {
@@ -73,10 +83,151 @@ namespace FXCM.Helpers
             });
         }
 
+        public O2GSessionStatusCode Status
+        {
+            get
+            {
+                O2GSessionStatusCode status;
+                lock (_csSessionStatus)
+                {
+                    status = _sessionStatusCode;
+                }
+                return status;
+            }
+            private set
+            {
+                lock (_csSessionStatus)
+                {
+                    _sessionStatusCode = value;
+                }
+            }
+        }
+
+        private bool Login(string username, string password, string connection)
+        {
+            _session.useTableManager(O2GTableManagerMode.Yes, null);
+            _session.login(username, password, HelpersLink, connection);
+
+            int countWait = 6;
+            while (_sessionStatusCode != O2GSessionStatusCode.Connected && countWait != 0)
+            {
+                _syncSessionEvent.WaitOne(10000);
+                countWait--;
+            }
+
+
+            return _sessionStatusCode == O2GSessionStatusCode.Connected;
+        }
+
+        private void Stop()
+        {
+            if (_session != null)
+            {
+                _session.logout();
+                _syncSessionEvent.WaitOne(5000);
+
+                _session.RequestCompleted -= Session_RequestCompleted;
+                _session.RequestFailed -= Session_RequestFailed;
+                _session.TablesUpdates -= Session_TablesUpdates;
+                _session.LoginFailed -= Session_LoginFailed;
+                _session.SessionStatusChanged -= Session_SessionStatusChanged;
+
+                _sessionStatusCode = O2GSessionStatusCode.Disconnected;
+
+                _session.Dispose();
+            }
+        }
+
+        #endregion // Connect/Disconnect
+
+        #region History Request/Response
+
+        public async Task<IEnumerable<HistoricalData>> GetHistoricalDataAsync(string symbol)
+        {
+            return await Task.Run(() =>
+            {
+                var factory = _session.getRequestFactory();
+                var timeframes = factory.Timeframes;
+                var timeframe = timeframes["m1"];
+                var request = factory.createMarketDataSnapshotRequestInstrument(symbol, timeframe, 300);
+
+                var timeFrom = DateTime.Now.AddDays(-1);
+                var timeTo = DateTime.Now;
+
+                factory.fillMarketDataSnapshotRequestTime(request, timeFrom, timeTo, false);
+
+                _session.sendRequest(request);
+
+                _syncHistoryEvent.WaitOne(30000);
+
+                var historyData = new List<HistoricalData>();
+                for (int i = 0; i < _marketDataSnapshotResponse.Count; i++)
+                {
+                    historyData.Add(new HistoricalData
+                    {
+                        Date = _marketDataSnapshotResponse.getDate(i),
+                        Open = GetPrice(_marketDataSnapshotResponse.getAskOpen(i), _marketDataSnapshotResponse.getBidOpen(i)),
+                        High = GetPrice(_marketDataSnapshotResponse.getAskHigh(i), _marketDataSnapshotResponse.getBidHigh(i)),
+                        Low = GetPrice(_marketDataSnapshotResponse.getAskLow(i), _marketDataSnapshotResponse.getBidLow(i)),
+                        Close = GetPrice(_marketDataSnapshotResponse.getAskLow(i), _marketDataSnapshotResponse.getBidLow(i)),
+                        Volume = _marketDataSnapshotResponse.getVolume(i)
+                    });
+                }
+
+                return historyData;
+            });
+        }
+
+        #endregion // History Request/Response
+
+        #region Events
+
+        private void Session_RequestCompleted(object sender, RequestCompletedEventArgs e)
+        {
+            switch (e.Response.Type)
+            {
+                case O2GResponseType.GetLastOrderUpdate:
+                    break;
+                case O2GResponseType.MarginRequirementsResponse:
+                    break;
+                case O2GResponseType.CommandResponse:
+                    break;
+                case O2GResponseType.GetSystemProperties:
+                    break;
+                case O2GResponseType.CreateOrderResponse:
+                    break;
+                case O2GResponseType.GetMessages:
+                    break;
+                case O2GResponseType.GetClosedTrades:
+                    break;
+                case O2GResponseType.GetTrades:
+                    break;
+                case O2GResponseType.GetOrders:
+                    break;
+                case O2GResponseType.GetOffers:
+                    break;
+                case O2GResponseType.GetAccounts:
+                    var accountsReader = _factory.createAccountsTableReader(e.Response);
+                    //_accountRow = GetAccountRow(accountsReader);
+                    _syncResponseEvent.Set();
+                    break;
+                case O2GResponseType.MarketDataSnapshot:
+                    var readerFactory = _session.getResponseReaderFactory();
+                    _marketDataSnapshotResponse = _factory.createMarketDataSnapshotReader(e.Response);
+                    _syncHistoryEvent.Set();
+                    break;
+                case O2GResponseType.TablesUpdates:
+                    _session.TablesUpdates += Session_TablesUpdates;
+                    break;
+                case O2GResponseType.ResponseUnknown:
+                    Stop();
+                    break;
+            }
+        }
+
         private void Session_TablesUpdates(object sender, TablesUpdatesEventArgs e)
         {
-            var responseFactory = _session.getResponseReaderFactory();
-            var responsGTablesUpdatesReader = responseFactory.createTablesUpdatesReader(e.Response);
+            var responsGTablesUpdatesReader = _factory.createTablesUpdatesReader(e.Response);
             for (int i = 0; i < responsGTablesUpdatesReader.Count; i++)
             {
                 if (responsGTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers && responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
@@ -85,12 +236,12 @@ namespace FXCM.Helpers
 
                     if (string.IsNullOrEmpty(offer.Instrument))
                         continue;
-                    
+
                     var pu = new PriceUpdate
                     {
                         Symbol = offer.Instrument,
                         TradeDateTime = offer.Time,
-                        Price = (offer.Bid + offer.Ask) / 2,
+                        Price = GetPrice(offer.Bid, offer.Ask),
                         Volume = offer.Volume,
                         Bid = offer.Bid,
                         Ask = offer.Ask,
@@ -125,106 +276,6 @@ namespace FXCM.Helpers
             }
             _syncSessionEvent.Set();
         }
-
-        public O2GSessionStatusCode Status
-        {
-            get
-            {
-                O2GSessionStatusCode status;
-                lock (_csSessionStatus)
-                {
-                    status = _sessionStatusCode;
-                }
-                return status;
-            }
-            private set
-            {
-                lock (_csSessionStatus)
-                {
-                    _sessionStatusCode = value;
-                }
-            }
-        }
-
-        private void Session_RequestCompleted(object sender, RequestCompletedEventArgs e)
-        {
-            var factory = _session.getResponseReaderFactory();
-            switch (e.Response.Type)
-            {
-                case O2GResponseType.GetLastOrderUpdate:
-                    break;
-                case O2GResponseType.MarginRequirementsResponse:
-                    break;
-                case O2GResponseType.CommandResponse:
-                    break;
-                case O2GResponseType.GetSystemProperties:
-                    break;
-                case O2GResponseType.CreateOrderResponse:
-                    break;
-                case O2GResponseType.GetMessages:
-                    break;
-                case O2GResponseType.GetClosedTrades:
-                    break;
-                case O2GResponseType.GetTrades:
-                    break;
-                case O2GResponseType.GetOrders:
-                    break;
-                case O2GResponseType.GetOffers:
-                    break;
-                case O2GResponseType.GetAccounts:
-                    var accountsReader = factory.createAccountsTableReader(e.Response);
-                    //_accountRow = GetAccountRow(accountsReader);
-                    _syncResponseEvent.Set();
-                    break;
-                case O2GResponseType.MarketDataSnapshot:
-                    //_marketDataSnapshotResponse = _responceReaderFactory.createMarketDataSnapshotReader(e.Response);
-                    //_historyLoadAutoResetEvent.Set();
-                    break;
-                case O2GResponseType.TablesUpdates:
-                    _session.TablesUpdates += Session_TablesUpdates;
-                    break;
-                case O2GResponseType.ResponseUnknown:
-                    Stop();
-                    break;
-            }
-        }
-
-        private bool Login(string username, string password, string connection)
-        {
-            _session.useTableManager(O2GTableManagerMode.Yes, null);
-            _session.login(username, password, HelpersLink, connection);
-
-            int countWait = 6;
-            while (_sessionStatusCode != O2GSessionStatusCode.Connected && countWait != 0)
-            {
-                _syncSessionEvent.WaitOne(10000);
-                countWait--;
-            }
-
-
-            return _sessionStatusCode == O2GSessionStatusCode.Connected;
-        }
-
-        private void Stop()
-        {
-            if (_session != null)
-            {
-                _session.logout();
-                _syncSessionEvent.WaitOne(5000);
-
-                _session.RequestCompleted -= Session_RequestCompleted;
-                _session.RequestFailed -= Session_RequestFailed;
-                _session.TablesUpdates -= Session_TablesUpdates;
-                _session.LoginFailed -= Session_LoginFailed;
-                _session.SessionStatusChanged -= Session_SessionStatusChanged;
-
-                _sessionStatusCode = O2GSessionStatusCode.Disconnected;
-            }
-        }
-
-        #endregion
-
-        #region Events
 
         private void Session_SessionStatusChanged(object sender, SessionStatusEventArgs e)
         {
@@ -273,6 +324,13 @@ namespace FXCM.Helpers
             TableUpdateInfoEventArgs?.Invoke(this, new TableUpdateInfoEventArgs());
         }
 
-        #endregion
+        #endregion // Events
+
+        #region Helpers
+
+        private double GetPrice(double ask, double bid) =>
+            (ask + bid) / 2;
+
+        #endregion // Helpers
     }
 }

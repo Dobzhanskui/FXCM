@@ -38,7 +38,7 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tbRealTimeSymbols = new System.Windows.Forms.TabPage();
             this.tbCurrentSymbol = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lbSymbol = new System.Windows.Forms.Label();
             this.cmbSymbols = new System.Windows.Forms.ComboBox();
             this.lbStatusFXCM = new System.Windows.Forms.Label();
             this.lbDBStatus = new System.Windows.Forms.Label();
@@ -47,6 +47,7 @@
             this.loginToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ctsChart = new LiveCharts.WinForms.CartesianChart();
             ((System.ComponentModel.ISupportInitialize)(this.dgvAllSymbols)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tbRealTimeSymbols.SuspendLayout();
@@ -151,7 +152,8 @@
             // 
             // tbCurrentSymbol
             // 
-            this.tbCurrentSymbol.Controls.Add(this.label1);
+            this.tbCurrentSymbol.Controls.Add(this.ctsChart);
+            this.tbCurrentSymbol.Controls.Add(this.lbSymbol);
             this.tbCurrentSymbol.Controls.Add(this.cmbSymbols);
             this.tbCurrentSymbol.Location = new System.Drawing.Point(4, 25);
             this.tbCurrentSymbol.Margin = new System.Windows.Forms.Padding(4);
@@ -162,24 +164,26 @@
             this.tbCurrentSymbol.Text = "Current Symbol";
             this.tbCurrentSymbol.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // lbSymbol
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(4, 12);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(54, 17);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Symbol";
+            this.lbSymbol.AutoSize = true;
+            this.lbSymbol.Location = new System.Drawing.Point(14, 11);
+            this.lbSymbol.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbSymbol.Name = "lbSymbol";
+            this.lbSymbol.Size = new System.Drawing.Size(54, 17);
+            this.lbSymbol.TabIndex = 1;
+            this.lbSymbol.Text = "Symbol";
             // 
             // cmbSymbols
             // 
+            this.cmbSymbols.Enabled = false;
             this.cmbSymbols.FormattingEnabled = true;
             this.cmbSymbols.Location = new System.Drawing.Point(81, 7);
             this.cmbSymbols.Margin = new System.Windows.Forms.Padding(4);
             this.cmbSymbols.Name = "cmbSymbols";
             this.cmbSymbols.Size = new System.Drawing.Size(160, 24);
             this.cmbSymbols.TabIndex = 0;
+            this.cmbSymbols.SelectedValueChanged += new System.EventHandler(this.cmbSymbols_SelectedValueChanged);
             // 
             // lbStatusFXCM
             // 
@@ -242,6 +246,18 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(129, 26);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
+            // ctsChart
+            // 
+            this.ctsChart.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ctsChart.Location = new System.Drawing.Point(7, 49);
+            this.ctsChart.Name = "ctsChart";
+            this.ctsChart.Size = new System.Drawing.Size(1045, 455);
+            this.ctsChart.TabIndex = 2;
+            this.ctsChart.Text = "cartesianChart1";
+            this.ctsChart.Visible = false;
+            // 
             // FXCM
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -280,7 +296,7 @@
         private System.Windows.Forms.TabPage tbCurrentSymbol;
         private System.Windows.Forms.Label lbStatusFXCM;
         private System.Windows.Forms.Label lbDBStatus;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lbSymbol;
         private System.Windows.Forms.ComboBox cmbSymbols;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem menuToolStripMenuItem;
@@ -292,6 +308,7 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn colPrice;
         private System.Windows.Forms.DataGridViewTextBoxColumn colAsk;
         private System.Windows.Forms.DataGridViewTextBoxColumn colBid;
+        private LiveCharts.WinForms.CartesianChart ctsChart;
     }
 }
 
