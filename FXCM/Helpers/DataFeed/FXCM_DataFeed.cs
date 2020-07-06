@@ -1,8 +1,6 @@
-﻿using FXCM.Helpers.Helpers;
-using fxcore2;
+﻿using fxcore2;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +11,8 @@ namespace FXCM.Helpers
     public class FxcmDataFeed
     {
         #region Members
+
+        private const string HelpersLink = "http://www.fxcorporate.com/Hosts.jsp";
 
         #region fxcore2
         private O2GSession _session;
@@ -26,12 +26,9 @@ namespace FXCM.Helpers
 
         public List<PriceUpdate> priceUpdates;
 
+        public IEnumerable<string> symbolsInfo;
+
         public event EventHandler<TableUpdateInfoEventArgs> TableUpdateInfoEventArgs;
-
-        #endregion
-
-        #region Properties
-        private string HelpersLink => "http://www.fxcorporate.com/Hosts.jsp";
 
         #endregion
 
@@ -41,6 +38,7 @@ namespace FXCM.Helpers
             _syncSessionEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
             _syncResponseEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
             priceUpdates = new List<PriceUpdate>();
+            symbolsInfo = new List<string>();
         }
         #endregion
 
@@ -270,22 +268,11 @@ namespace FXCM.Helpers
 
         private void OnRowCountChange()
         {
+            symbolsInfo = priceUpdates.Select(s => s.Symbol);
+
             TableUpdateInfoEventArgs?.Invoke(this, new TableUpdateInfoEventArgs());
         }
 
         #endregion
-    }
-
-    public class PriceUpdate
-    {
-        public DateTime TradeDateTime { get; set; }
-        public string Symbol { get; set; }
-        public double Price { get; set; }
-        public double PrevPrice { get; set; }
-        public long Volume { get; set; }
-        public double Bid { get; set; }
-        public double Ask { get; set; }
-        public double Low { get; set; }
-        public double High { get; set; }
     }
 }

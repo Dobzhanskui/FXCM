@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using FXCM.Helpers;
 
@@ -13,24 +15,17 @@ namespace FXCM
         public FXCM()
         {
             m_fxcm = new FxcmDataFeed();
+            m_login = new Login();
             m_fxcm.TableUpdateInfoEventArgs += FXCM_TableUpdateInfo;
             InitializeComponent();
-
             LoginToDataFeed();
         }
 
-        private async void loginToolStripMenuItem_Click(object sender, EventArgs e)
+        private void loginToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (m_login.ShowDialog() == DialogResult.OK)
             {
-                if (await m_fxcm.ConnectToDataFeedAsync(m_login.UserName, m_login.Passsword, m_login.ConnectionAccount))
-                {
-                    lbStatusFXCM.Text = m_fxcm.Status.ToString();
-                }
-                else
-                {
-                    MessageBox.Show("None wrong credentials");
-                }
+                LoginToDataFeed();
             }
         }
 
@@ -67,7 +62,7 @@ namespace FXCM
             }
         }
 
-        private void FXCM_TableUpdateInfo(object sender, Helpers.Helpers.TableUpdateInfoEventArgs e)
+        private void FXCM_TableUpdateInfo(object sender, TableUpdateInfoEventArgs e)
         {
             if(dgvAllSymbols.InvokeRequired)
             {
@@ -88,15 +83,18 @@ namespace FXCM
         private void RefreshDataGridViewAllSymbols()
         {
             if (dgvAllSymbols.RowCount != m_fxcm.priceUpdates.Count)
+            {
                 dgvAllSymbols.RowCount = m_fxcm.priceUpdates.Count;
+                cmbSymbols.Items.Clear();
+                cmbSymbols.Items.AddRange(m_fxcm.symbolsInfo.ToArray());
+            }
 
             dgvAllSymbols.Refresh();
         }
 
         private async void LoginToDataFeed()
         {
-            m_login = new Login();
-            if (await m_fxcm.ConnectToDataFeedAsync(m_login.UserName, m_login.Passsword, m_login.ConnectionAccount))
+            if (await m_fxcm.ConnectToDataFeedAsync(m_login.LoginCredentials.UserName, m_login.LoginCredentials.Passsword, m_login.LoginCredentials.ConnectionAccount))
             {
                 lbStatusFXCM.Text = m_fxcm.Status.ToString();
                 lbStatusFXCM.ForeColor = Color.Green;

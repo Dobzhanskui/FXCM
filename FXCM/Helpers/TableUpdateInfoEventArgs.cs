@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FXCM.Helpers.Helpers
+namespace FXCM.Helpers
 {
     public class TableUpdateInfoEventArgs : EventArgs
     {

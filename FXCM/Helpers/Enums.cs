@@ -36,6 +36,11 @@ namespace FXCM.Helpers
             }
             return default;
         }
+
+        public static T ConvertToEnum(object value)
+        {
+            return (T)Enum.Parse(typeof(T), value.ToString());
+        }
     }
 
     public enum Connection

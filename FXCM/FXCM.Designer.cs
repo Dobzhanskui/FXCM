@@ -38,13 +38,8 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tbRealTimeSymbols = new System.Windows.Forms.TabPage();
             this.tbCurrentSymbol = new System.Windows.Forms.TabPage();
-            this.dgvSymbol = new System.Windows.Forms.DataGridView();
-            this.colDateTime = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colRealSymbol = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colRealAsk = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colRealBid = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.label1 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.cmbSymbols = new System.Windows.Forms.ComboBox();
             this.lbStatusFXCM = new System.Windows.Forms.Label();
             this.lbDBStatus = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -56,7 +51,6 @@
             this.tabControl1.SuspendLayout();
             this.tbRealTimeSymbols.SuspendLayout();
             this.tbCurrentSymbol.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvSymbol)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -157,9 +151,8 @@
             // 
             // tbCurrentSymbol
             // 
-            this.tbCurrentSymbol.Controls.Add(this.dgvSymbol);
             this.tbCurrentSymbol.Controls.Add(this.label1);
-            this.tbCurrentSymbol.Controls.Add(this.comboBox1);
+            this.tbCurrentSymbol.Controls.Add(this.cmbSymbols);
             this.tbCurrentSymbol.Location = new System.Drawing.Point(4, 25);
             this.tbCurrentSymbol.Margin = new System.Windows.Forms.Padding(4);
             this.tbCurrentSymbol.Name = "tbCurrentSymbol";
@@ -168,57 +161,6 @@
             this.tbCurrentSymbol.TabIndex = 1;
             this.tbCurrentSymbol.Text = "Current Symbol";
             this.tbCurrentSymbol.UseVisualStyleBackColor = true;
-            // 
-            // dgvSymbol
-            // 
-            this.dgvSymbol.AllowUserToAddRows = false;
-            this.dgvSymbol.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvSymbol.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colDateTime,
-            this.colRealSymbol,
-            this.colRealAsk,
-            this.colRealBid});
-            this.dgvSymbol.Location = new System.Drawing.Point(4, 41);
-            this.dgvSymbol.Margin = new System.Windows.Forms.Padding(4);
-            this.dgvSymbol.Name = "dgvSymbol";
-            this.dgvSymbol.ReadOnly = true;
-            this.dgvSymbol.RowHeadersVisible = false;
-            this.dgvSymbol.RowHeadersWidth = 51;
-            this.dgvSymbol.Size = new System.Drawing.Size(1020, 433);
-            this.dgvSymbol.TabIndex = 2;
-            this.dgvSymbol.VirtualMode = true;
-            // 
-            // colDateTime
-            // 
-            this.colDateTime.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colDateTime.HeaderText = "Date Time";
-            this.colDateTime.MinimumWidth = 6;
-            this.colDateTime.Name = "colDateTime";
-            this.colDateTime.ReadOnly = true;
-            // 
-            // colRealSymbol
-            // 
-            this.colRealSymbol.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colRealSymbol.HeaderText = "Real Symbol";
-            this.colRealSymbol.MinimumWidth = 6;
-            this.colRealSymbol.Name = "colRealSymbol";
-            this.colRealSymbol.ReadOnly = true;
-            // 
-            // colRealAsk
-            // 
-            this.colRealAsk.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colRealAsk.HeaderText = "Real Ask";
-            this.colRealAsk.MinimumWidth = 6;
-            this.colRealAsk.Name = "colRealAsk";
-            this.colRealAsk.ReadOnly = true;
-            // 
-            // colRealBid
-            // 
-            this.colRealBid.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colRealBid.HeaderText = "Real Bid";
-            this.colRealBid.MinimumWidth = 6;
-            this.colRealBid.Name = "colRealBid";
-            this.colRealBid.ReadOnly = true;
             // 
             // label1
             // 
@@ -230,14 +172,14 @@
             this.label1.TabIndex = 1;
             this.label1.Text = "Symbol";
             // 
-            // comboBox1
+            // cmbSymbols
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(81, 7);
-            this.comboBox1.Margin = new System.Windows.Forms.Padding(4);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(160, 24);
-            this.comboBox1.TabIndex = 0;
+            this.cmbSymbols.FormattingEnabled = true;
+            this.cmbSymbols.Location = new System.Drawing.Point(81, 7);
+            this.cmbSymbols.Margin = new System.Windows.Forms.Padding(4);
+            this.cmbSymbols.Name = "cmbSymbols";
+            this.cmbSymbols.Size = new System.Drawing.Size(160, 24);
+            this.cmbSymbols.TabIndex = 0;
             // 
             // lbStatusFXCM
             // 
@@ -323,7 +265,6 @@
             this.tbRealTimeSymbols.ResumeLayout(false);
             this.tbCurrentSymbol.ResumeLayout(false);
             this.tbCurrentSymbol.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvSymbol)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -339,18 +280,13 @@
         private System.Windows.Forms.TabPage tbCurrentSymbol;
         private System.Windows.Forms.Label lbStatusFXCM;
         private System.Windows.Forms.Label lbDBStatus;
-        private System.Windows.Forms.DataGridView dgvSymbol;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox cmbSymbols;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem menuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loginToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colDateTime;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colRealSymbol;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colRealAsk;
-        private System.Windows.Forms.DataGridViewTextBoxColumn colRealBid;
         private System.Windows.Forms.DataGridViewTextBoxColumn colTime;
         private System.Windows.Forms.DataGridViewTextBoxColumn colSymbol;
         private System.Windows.Forms.DataGridViewTextBoxColumn colPrice;
