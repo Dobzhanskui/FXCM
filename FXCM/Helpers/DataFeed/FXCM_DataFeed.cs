@@ -32,6 +32,7 @@ namespace FXCM.Helpers
         public List<PriceUpdate> priceUpdates;
 
         public IEnumerable<string> symbolsInfo;
+        private object priceUpdateObject;
 
         public event EventHandler<TableUpdateInfoEventArgs> TableUpdateInfoEventArgs;
 
@@ -46,6 +47,7 @@ namespace FXCM.Helpers
             _syncHistoryEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
             priceUpdates = new List<PriceUpdate>();
             symbolsInfo = new List<string>();
+            priceUpdateObject = new object();
         }
 
         #endregion // Initialization
@@ -227,44 +229,48 @@ namespace FXCM.Helpers
 
         private void Session_TablesUpdates(object sender, TablesUpdatesEventArgs e)
         {
-            var responsGTablesUpdatesReader = _factory.createTablesUpdatesReader(e.Response);
-            for (int i = 0; i < responsGTablesUpdatesReader.Count; i++)
+            var responseTablesUpdatesReader = _factory.createTablesUpdatesReader(e.Response);
+            Parallel.For(0, responseTablesUpdatesReader.Count, i =>
             {
-                if (responsGTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers && responsGTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
+                if (responseTablesUpdatesReader.getUpdateTable(i) == O2GTableType.Offers && responseTablesUpdatesReader.getUpdateType(i) == O2GTableUpdateType.Update)
                 {
-                    var offer = responsGTablesUpdatesReader.getOfferRow(i);
+                    var offer = responseTablesUpdatesReader.getOfferRow(i);
 
-                    if (string.IsNullOrEmpty(offer.Instrument))
-                        continue;
+                    if (!string.IsNullOrEmpty(offer.Instrument))
+                    {
+                        var pu = new PriceUpdate
+                        {
+                            Symbol = offer.Instrument,
+                            TradeDateTime = offer.Time,
+                            Price = GetPrice(offer.Bid, offer.Ask),
+                            Volume = offer.Volume,
+                            Bid = offer.Bid,
+                            Ask = offer.Ask,
+                            High = offer.High,
+                            Low = offer.Low
+                        };
 
-                    var pu = new PriceUpdate
-                    {
-                        Symbol = offer.Instrument,
-                        TradeDateTime = offer.Time,
-                        Price = GetPrice(offer.Bid, offer.Ask),
-                        Volume = offer.Volume,
-                        Bid = offer.Bid,
-                        Ask = offer.Ask,
-                        High = offer.High,
-                        Low = offer.Low
-                    };
-
-                    var firstPriceUpdate = priceUpdates.FirstOrDefault(f => f.Symbol.Equals(pu.Symbol));
-                    if (firstPriceUpdate != null)
-                    {
-                        firstPriceUpdate.Ask = pu.Ask;
-                        firstPriceUpdate.Bid = pu.Bid;
-                        firstPriceUpdate.Volume = pu.Volume;
-                        firstPriceUpdate.PrevPrice = firstPriceUpdate.Price;
-                        firstPriceUpdate.Price = pu.Price;
-                        firstPriceUpdate.TradeDateTime = pu.TradeDateTime;
-                    }
-                    else
-                    {
-                        priceUpdates.Add(pu);
+                        lock(priceUpdateObject)
+                        {
+                            var firstPriceUpdate = priceUpdates.FirstOrDefault(f => f.Symbol.Equals(pu.Symbol));
+                            if (firstPriceUpdate != null)
+                            {
+                                firstPriceUpdate.Ask = pu.Ask;
+                                firstPriceUpdate.Bid = pu.Bid;
+                                firstPriceUpdate.Volume = pu.Volume;
+                                firstPriceUpdate.PrevPrice = firstPriceUpdate.Price;
+                                firstPriceUpdate.Price = pu.Price;
+                                firstPriceUpdate.TradeDateTime = pu.TradeDateTime;
+                            }
+                            else
+                            {
+                                priceUpdates.Add(pu);
+                            }
+                        }
                     }
                 }
-            }
+            });
+            
             OnRowCountChange();
         }
 

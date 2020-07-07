@@ -117,7 +117,7 @@
     <Compile Include="Helpers\FormLogin\Login.Designer.cs">
       <DependentUpon>Login.cs</DependentUpon>
     </Compile>
-    <Compile Include="Helpers\HistoryData.cs" />
+    <Compile Include="Helpers\HistoricalData.cs" />
     <Compile Include="Helpers\LoginCredentials.cs" />
     <Compile Include="Helpers\PriceUpdate.cs" />
     <Compile Include="Helpers\SymbolInfo.cs" />
